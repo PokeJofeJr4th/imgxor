@@ -4,11 +4,15 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::path::Path;
 
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use image::Rgb;
 use image::{io::Reader, ImageBuffer};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
+
+use crate::preview::preview;
+
+mod preview;
 
 #[derive(Parser)]
 /// Simple two-way image encryption. Use a password to encode or decode an image.
@@ -17,15 +21,26 @@ struct Args {
     img_file: String,
     /// Encryption Password
     mask_password: String,
-    /// Path to write the output file
-    out_file: String,
+    #[command(subcommand)]
+    sub_command: SubCommand,
+}
+
+#[derive(Clone, Subcommand)]
+enum SubCommand {
+    /// View the image without writing it to a file. Press `q` to exit the program, or any other key to reload the terminal window.
+    Preview,
+    /// Save the image to a file
+    Save {
+        /// File to save to
+        out_file: String,
+    },
 }
 
 fn main() {
     let Args {
         img_file,
         mask_password,
-        out_file,
+        sub_command,
     } = Args::parse();
 
     println!("Opening {img_file}...");
@@ -52,11 +67,16 @@ fn main() {
             }
         }
     }
-    println!("Saving {out_file}...");
-    img.save(&out_file)
-        .map_err(|err| format!("Error saving {out_file}: {err}"))
-        .unwrap();
-    println!("Done!");
+    match sub_command {
+        SubCommand::Save { out_file } => {
+            println!("Saving {out_file}...");
+            img.save(&out_file)
+                .map_err(|err| format!("Error saving {out_file}: {err}"))
+                .unwrap();
+            println!("Done!");
+        }
+        SubCommand::Preview => preview(&img),
+    }
 }
 
 fn seed_rng_with_string(seed_string: &str) -> ChaCha8Rng {
