@@ -28,6 +28,7 @@ fn main() {
         out_file,
     } = Args::parse();
 
+    println!("Opening {img_file}...");
     let mut img = Reader::open(Path::new(&img_file))
         .map_err(|err| format!("Error opening {img_file}: {err}"))
         .unwrap()
@@ -37,9 +38,11 @@ fn main() {
         .to_rgb8();
     let width = img.width();
     let height = img.height();
+    println!("Generating Encryption Mask...");
     let mut rng = seed_rng_with_string(&mask_password);
     let mask = ImageBuffer::from_fn(width, height, |_, _| Rgb(rng.gen::<[u8; 3]>()));
 
+    println!("Encrypting...");
     for x in 0..width {
         for y in 0..height {
             let img_px = img.get_pixel_mut(x, y);
@@ -49,9 +52,11 @@ fn main() {
             }
         }
     }
+    println!("Saving {out_file}...");
     img.save(&out_file)
         .map_err(|err| format!("Error saving {out_file}: {err}"))
         .unwrap();
+    println!("Done!");
 }
 
 fn seed_rng_with_string(seed_string: &str) -> ChaCha8Rng {
