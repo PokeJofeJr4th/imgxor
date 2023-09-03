@@ -49,7 +49,9 @@ fn main() {
             }
         }
     }
-    img.save(out_file).unwrap();
+    img.save(&out_file)
+        .map_err(|err| format!("Error saving {out_file}: {err}"))
+        .unwrap();
 }
 
 fn seed_rng_with_string(seed_string: &str) -> ChaCha8Rng {
