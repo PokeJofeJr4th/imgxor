@@ -95,7 +95,7 @@ pub fn approximate_image(img: &RgbImage, term_size: (u16, u16), verbose: bool) -
             }
             let (r, g, b) = (r / pix_len, g / pix_len, b / pix_len);
             current_line.push_str(&format!(
-                "\x1b[38;5;{};38;2;{r};{g};{b}m█\x1b[0m",
+                "\x1b[38;5;{};38;2;{r};{g};{b}m█",
                 // "\x1b[38;5;{}m█\x1b[0m",
                 rgb_to_256((r, g, b))
             ));
